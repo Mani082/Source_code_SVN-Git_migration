@@ -1,16 +1,42 @@
 ﻿function trunk_master
 {
-    $repo = Read-Host -Prompt "Enter the repo url"
     $path = Read-Host -Prompt "Enter the path where you want to clone the repo locally"
-    cd $path
+    if (Test-Path -Path "$path" -PathType Container) 
+    {
+        cd $path
+    }
+    else 
+    {
+        Write-Host "Please enter a valid path"
+        exit
+    }
+    $repo = Read-Host -Prompt "Enter the repo url"
     #clone into any desired path
-    git clone $repo
+    git clone $repo 
+    #$? Contains the execution status of the last operation. 
+    #It contains TRUE if the last operation succeeded and FALSE if it failed.
+    if(-not $?) {
+    #throw "Error with git clone!"
+    Write-Output "Possible chances for termination `n 1. Wrong url for Git repo `n 2. You are trying to clone again, i.e already a git repo exists with that nam `n Read the above error description for better details"
+    exit
+    #$repo = Read-Host -Prompt "Enter the repo url"
+    #git clone $repo
+    } 
     #to get the folder name from the github repo link, last part of the link is folder name basically 
     $folder_name = $repo.Split('/.')[-2]
     #cd $folder_name
     $svn_path = Read-Host -Prompt "Enter the path where the svn server repo is stored"
-    #copy all the files in trunk into local git repo
+
+    if (Test-Path -Path "$svn_path" -PathType Container) 
+    {
+        #copy all the files in trunk into local git repo
     Copy-Item $svn_path\trunk\* -Destination $path\$folder_name -Recurse
+    }
+    else 
+    {
+        Write-Host "Please enter a valid path"
+        exit
+    }
     cd $path\$folder_name
     git status
     #add and commit the changes to local repo, also push it to remote repo
@@ -42,5 +68,6 @@
     git push origin $branch
    }
 }
-#Entry point
+#Entry point for Master
 trunk_master
+#Entry point for Branches
